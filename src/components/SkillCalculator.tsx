@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 
 const SKILLS = [
   { key: "spd", label: "SPD", name: "Speed" },
@@ -13,6 +12,33 @@ const SKILLS = [
 ] as const;
 
 const MAX_SKILL = 1200;
+
+const MULTIPLIERS = [
+  0.5, 0.8, 1, 1.3, 1.6, 1.8, 2.1, 2.4, 2.6, 2.8, 2.9, 3, 3.1, 3.3, 3.4, 3.5,
+  3.9, 4.1, 4.2, 4.3, 5.2, 5.5, 6.6, 6.8, 6.9,
+];
+
+const calculateStatValue = (x: number): number => {
+  if (x < 0) return 0;
+  if (x > 1200) return 3841;
+
+  const blockSize = 50;
+  const blocks = Math.floor(x / blockSize);
+  
+  // Calculate block_sum
+  let blockSum = 0;
+  for (let i = 0; i < blocks && i < MULTIPLIERS.length; i++) {
+    blockSum += MULTIPLIERS[i] * 50;
+  }
+  
+  // Calculate remainder_sum
+  const remainder = x % blockSize;
+  const remainderSum = blocks < MULTIPLIERS.length 
+    ? MULTIPLIERS[blocks] * (remainder + 1) 
+    : 0;
+  
+  return Math.floor(blockSum + remainderSum);
+};
 
 const getRankImage = (total: number): string => {
   if (total < 300) return "https://ucarecdn.com/5ebd9b54-6861-451f-81e4-d927c0f93871/G.png";
@@ -51,9 +77,19 @@ export const SkillCalculator = () => {
     wit: 0,
   });
 
-  const total = useMemo(() => {
-    return Object.values(skills).reduce((sum, value) => sum + value, 0);
+  const calculatedSkills = useMemo(() => {
+    return {
+      spd: calculateStatValue(skills.spd),
+      sta: calculateStatValue(skills.sta),
+      pwr: calculateStatValue(skills.pwr),
+      gut: calculateStatValue(skills.gut),
+      wit: calculateStatValue(skills.wit),
+    };
   }, [skills]);
+
+  const total = useMemo(() => {
+    return Object.values(calculatedSkills).reduce((sum, value) => sum + value, 0);
+  }, [calculatedSkills]);
 
   const rankImage = useMemo(() => getRankImage(total), [total]);
 
@@ -83,19 +119,11 @@ export const SkillCalculator = () => {
                       max={MAX_SKILL}
                       value={skills[key as keyof typeof skills]}
                       onChange={(e) => handleSkillChange(key, parseInt(e.target.value) || 0)}
-                      className="w-20 border-border bg-input text-right text-foreground"
+                      className="w-24 border-border bg-input text-right text-foreground"
                     />
                   </div>
-                  <Slider
-                    value={[skills[key as keyof typeof skills]]}
-                    onValueChange={([value]) => handleSkillChange(key, value)}
-                    max={MAX_SKILL}
-                    step={1}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>0</span>
-                    <span>{MAX_SKILL}</span>
+                  <div className="text-right text-sm text-muted-foreground">
+                    Calculated: <span className="font-semibold text-foreground">{calculatedSkills[key as keyof typeof calculatedSkills]}</span>
                   </div>
                 </div>
               ))}
