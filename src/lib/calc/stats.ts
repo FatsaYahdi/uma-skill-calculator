@@ -1,3 +1,5 @@
+import { calculateStatScore } from "./total";
+
 const INITIAL_SKILLS = {
   spd: 1200,
   sta: 1200,
@@ -27,24 +29,25 @@ const MULTIPLIERS = [
 ];
 
 const calculateStatValue = (x: number): number => {
-  if (x < 0) return 0;
-  if (x > 1200) return 3841;
+  return calculateStatScore(x);
+  // if (x < 0) return 0;
+  // if (x > 1200) return 3841;
 
-  const blockSize = 50;
-  const blocks = Math.floor(x / blockSize);
+  // const blockSize = 50;
+  // const blocks = Math.floor(x / blockSize);
 
-  // Calculate block_sum
-  let blockSum = 0;
-  for (let i = 0; i < blocks && i < MULTIPLIERS.length; i++) {
-    blockSum += MULTIPLIERS[i] * 50;
-  }
+  // // Calculate block_sum
+  // let blockSum = 0;
+  // for (let i = 0; i < blocks && i < MULTIPLIERS.length; i++) {
+  //   blockSum += MULTIPLIERS[i] * 50;
+  // }
 
-  // Calculate remainder_sum
-  const remainder = x % blockSize;
-  const remainderSum =
-    blocks < MULTIPLIERS.length ? MULTIPLIERS[blocks] * (remainder + 1) : 0;
+  // // Calculate remainder_sum
+  // const remainder = x % blockSize;
+  // const remainderSum =
+  //   blocks < MULTIPLIERS.length ? MULTIPLIERS[blocks] * (remainder + 1) : 0;
 
-  return Math.floor(blockSum + remainderSum);
+  // return Math.floor(blockSum + remainderSum);
 };
 
 const calculateUniqueSkillUmaStar = (
